@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PashaGDZ</title>
+<style>
+  :root{
+    --bg:#07070a; 
+    --card:rgba(20, 20, 25, 0.6); 
+    --card-hover:rgba(30, 30, 38, 0.8);
+    --border:rgba(255, 255, 255, 0.08);
+    --text:#ffffff; 
+    --muted:#8b93a7; 
+    --accent:#ff3333; 
+    --accent-glow:rgba(255, 51, 51, 0.25);
+    --radius:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background-color:var(--bg); 
+    background-image: radial-gradient(circle at 50% 0%, rgba(255, 51, 51, 0.05) 0%, transparent 50%);
+    color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* --- Шапка (Навигация) --- */
+  header{
+    background: rgba(7, 7, 10, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100;
+  }
+  .header-content{
+    max-width:800px; margin:0 auto; padding:16px 20px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+  }
+  .logo{font-weight:800; font-size:24px; letter-spacing:-0.5px; cursor:pointer; display:flex; align-items:center;}
+  .logo .white{color:var(--text);}
+  .logo .red{color:var(--accent); text-shadow: 0 0 15px var(--accent-glow);}
+  
+  .nav{display:flex; gap:4px; background:rgba(255,255,255,0.03); padding:4px; border-radius:12px; border: 1px solid var(--border);}
+  .nav-btn{
+    background:transparent; border:none; color:var(--muted); padding:8px 16px;
+    border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; transition:all 0.3s ease;
+  }
+  .nav-btn:hover{color:var(--text);}
+  .nav-btn.active{background:var(--card-hover); color:var(--text); box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
+
+  /* --- Основной контент --- */
+  .wrap{max-width:800px; margin:0 auto; padding:0 0 40px 0; width:100%; flex:1;}
+  
+  .screen{display:none; animation: fadeIn 0.4s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* --- Hero Баннер (Скриншот) --- */
+  .hero-banner {
+    position: relative; width: 100%; height: 320px;
+    /* Цвет-заглушка, пока нет твоей картинки */
+    background: linear-gradient(180deg, rgba(255,51,51,0.1) 0%, rgba(7,7,10,1) 100%);
+    background-size: cover; background-position: center;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 30px 20px; box-sizing: border-box;
+  }
+  /* Затемнение снизу, чтобы текст читался поверх любой картинки */
+  .hero-banner::after {
+    content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+    background: linear-gradient(180deg, transparent 0%, rgba(7,7,10,0.8) 60%, rgba(7,7,10,1) 100%);
+    z-index: 1;
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .hero-brand .icon { font-size: 32px; }
+  .hero-brand .text h1 { font-size: 24px; font-weight: 800; line-height: 1.1;}
+  .hero-brand .text h1 span { color: var(--accent); }
+  .hero-brand .text p { font-size: 12px; color: var(--muted); margin-top: 2px;}
+
+  .hero-title { font-size: 32px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; letter-spacing: -0.5px;}
+  .hero-title span { color: var(--accent); text-shadow: 0 0 20px var(--accent-glow);}
+  .hero-subtitle { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 24px; max-width: 80%;}
+
+  /* --- Поиск --- */
+  .search-bar {
+    display: flex; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 16px; padding: 6px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+  }
+  .search-bar input {
+    flex: 1; background: transparent; border: none; padding: 12px 16px;
+    color: white; font-size: 16px; outline: none;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-bar button {
+    background: var(--accent); border: none; width: 48px; border-radius: 12px;
+    color: white; font-size: 20px; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .search-bar button:hover { background: #e62020; }
+
+  /* --- Сетка предметов --- */
+  .subjects-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px;
+  }
+  @media(max-width:500px){
+    .subjects-grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 28px; }
+  }
+
+  .subject-card {
+    display: flex; align-items: center; padding: 16px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 16px; text-decoration: none; color: var(--text);
+    transition: all 0.3s ease; position: relative; overflow: hidden;
+  }
+  .subject-card::before {
+    content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%;
+    background: transparent; transition: 0.3s;
+  }
+  
+  /* Подсветки для разных предметов */
+  .subject-card[data-color="blue"]::before { background: #4a90e2; }
+  .subject-card[data-color="purple"]::before { background: #9b51e0; }
+  .subject-card[data-color="green"]::before { background: #27ae60; }
+  .subject-card[data-color="red"]::before { background: #eb5757; }
+  .subject-card[data-color="yellow"]::before { background: #f2c94c; }
+  .subject-card[data-color="cyan"]::before { background: #56ccf2; }
+
+  .subject-card[data-color="blue"]:hover { border-color: rgba(74,144,226,0.4); box-shadow: 0 0 20px rgba(74,144,226,0.15); }
+  .subject-card[data-color="purple"]:hover { border-color: rgba(155,81,224,0.4); box-shadow: 0 0 20px rgba(155,81,224,0.15); }
+  .subject-card[data-color="green"]:hover { border-color: rgba(39,174,96,0.4); box-shadow: 0 0 20px rgba(39,174,96,0.15); }
+  .subject-card[data-color="red"]:hover { border-color: rgba(235,87,87,0.4); box-shadow: 0 0 20px rgba(235,87,87,0.15); }
+  .subject-card[data-color="yellow"]:hover { border-color: rgba(242,201,76,0.4); box-shadow: 0 0 20px rgba(242,201,76,0.15); }
+  .subject-card[data-color="cyan"]:hover { border-color: rgba(86,204,242,0.4); box-shadow: 0 0 20px rgba(86,204,242,0.15); }
+
+  .subject-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-right: 16px; flex-shrink: 0;
+  }
+  .subject-card[data-color="blue"] .subject-icon { background: rgba(74,144,226,0.15); color: #4a90e2; }
+  .subject-card[data-color="purple"] .subject-icon { background: rgba(155,81,224,0.15); color: #9b51e0; }
+  .subject-card[data-color="green"] .subject-icon { background: rgba(39,174,96,0.15); color: #27ae60; }
+  .subject-card[data-color="red"] .subject-icon { background: rgba(235,87,87,0.15); color: #eb5757; }
+  .subject-card[data-color="yellow"] .subject-icon { background: rgba(242,201,76,0.15); color: #f2c94c; }
+  .subject-card[data-color="cyan"] .subject-icon { background: rgba(86,204,242,0.15); color: #56ccf2; }
+
+  .subject-name { flex: 1; font-size: 15px; font-weight: 600; }
+  .subject-arrow { color: var(--muted); font-size: 18px; transition: 0.2s; }
+  .subject-card:hover .subject-arrow { transform: translateX(4px); color: var(--text); }
+
+  /* --- Расписание и Звонки (для вкладки) --- */
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:var(--radius); padding:24px; margin: 0 20px 20px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px);
+  }
+  h2{font-size:13px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:16px; font-weight:700;}
+  
+  .days{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap}
+  .day{
+    padding:8px 16px; border-radius:10px; background:rgba(255,255,255,0.03);
+    border:1px solid transparent; cursor:pointer; font-size:14px; color:var(--muted); transition:all 0.2s; font-weight: 600;
+  }
+  .day:hover{color:var(--text); background:rgba(255,255,255,0.06)}
+  .day.active{background:var(--accent); color:#fff; border-color:var(--accent); box-shadow: 0 4px 15px var(--accent-glow);}
+  
+  .lesson{
+    display:flex; gap:16px; align-items:center; padding:14px 16px; border-radius:12px;
+    background:rgba(255,255,255,0.02); margin-bottom:8px; border: 1px solid rgba(255,255,255,0.03);
+  }
+  .lesson .num{color:var(--accent); font-weight:800; width:20px; flex-shrink:0; font-size: 14px;}
+  .lesson .subj{flex:1; font-weight: 500; font-size: 14px;}
+  .lesson .time{color:var(--muted); font-size:13px; font-weight: 500;}
+  
+  .bells{display:flex; flex-direction:column; gap:8px}
+  .bell{display:flex; justify-content:space-between; padding:14px 16px; border-radius:12px; background:rgba(255,255,255,0.02); font-size:14px; font-weight: 500; border: 1px solid rgba(255,255,255,0.03);}
+  .bell span:last-child{color:var(--muted);}
+
+  /* --- Кнопки редактирования --- */
+  .edit-btn{
+    background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--muted);
+    padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight: 600; transition: all 0.2s;
+  }
+  .edit-btn:hover{color:var(--text); border-color:var(--accent); background:rgba(255,51,51,0.1);}
+  .row-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px}
+  
+  /* --- Модалки --- */
+  dialog{
+    background:var(--bg); color:var(--text); border:1px solid var(--border);
+    border-radius:var(--radius); padding:24px; max-width:500px; width:90%;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8); margin: auto; backdrop-filter: blur(20px);
+  }
+  dialog::backdrop{background:rgba(0,0,0,.8); backdrop-filter: blur(8px);}
+  textarea{
+    width:100%; min-height:200px; background:rgba(255,255,255,0.03); color:var(--text);
+    border:1px solid var(--border); border-radius:12px; padding:16px;
+    font-family:monospace; font-size:13px; resize:vertical; outline: none; transition: border 0.2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  .dlg-actions{display:flex; gap:12px; justify-content:flex-end; margin-top:20px}
+  .btn{padding:10px 20px; border-radius:10px; border:none; cursor:pointer; font-size:14px; font-weight:600; transition:all 0.2s;}
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-primary:hover{background:#e62020;}
+  .btn-ghost{background:transparent; color:var(--muted); border:1px solid var(--border);}
+  .btn-ghost:hover{color:var(--text); background:rgba(255,255,255,0.05);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="logo" onclick="switchTab('home')">
+      <span class="white">Pasha</span><span class="red">GDZ</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" id="btn-home" onclick="switchTab('home')">Главная</button>
+      <button class="nav-btn" id="btn-schedule" onclick="switchTab('schedule')">Расписание</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  
+  <!-- ЭКРАН 1: ГЛАВНАЯ (Как на скрине) -->
+  <div id="screen-home" class="screen active">
+    
+    <!-- Баннер. Когда зальешь фото на GitHub, поменяй путь в style="background-image: url('твой_файл.jpg')" -->
+    <div class="hero-banner" style="background-image: url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1000&auto=format&fit=crop');">
+      <div class="hero-content">
+        
+        <div class="hero-brand">
+          <div class="icon">🎓</div>
+          <div class="text">
+            <h1>Pasha<span>GDZ</span></h1>
+            <p>Твой быстрый путь к решению</p>
+          </div>
+        </div>
+
+        <h2 class="hero-title">Найди решение<br><span>за пару секунд</span></h2>
+        <p class="hero-subtitle">Просто выбери предмет ниже — и получи доступ к ответам.</p>
+        
+        <!-- Визуальный поиск (можно потом прикрутить) -->
+        <div class="search-bar">
+          <input type="text" placeholder="Номер задачи, предмет или тема...">
+          <button>→</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Сетка предметов -->
+    <div class="subjects-grid" id="subjectsGrid">
+      <!-- Карточки генерируются JS -->
+    </div>
+
+  </div>
+
+  <!-- ЭКРАН 2: РАСПИСАНИЕ И ЗВОНКИ -->
+  <div id="screen-schedule" class="screen" style="padding-top: 24px;">
+    <div class="card">
+      <div class="row-head">
+        <h2 style="margin:0">Расписание уроков</h2>
+        <button class="edit-btn" onclick="openEdit('schedule')">✎ изменить</button>
+      </div>
+      <div class="days" id="days"></div>
+      <div id="lessons"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-head">
+        <h2 style="margin:0">Звонки</h2>
+        <button class="edit-btn" onclick="openEdit('bells')">✎ изменить</button>
+      </div>
+      <div class="bells" id="bells"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- МОДАЛКА РЕДАКТИРОВАНИЯ -->
+<dialog id="dlg">
+  <h2 id="dlgTitle" style="margin-bottom:12px; font-size: 16px; color: white;"></h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:16px" id="dlgHint"></p>
+  <textarea id="dlgArea"></textarea>
+  <div class="dlg-actions">
+    <button class="btn btn-ghost" onclick="dlg.close()">Отмена</button>
+    <button class="btn btn-primary" onclick="saveEdit()">Сохранить</button>
+  </div>
+</dialog>
+
+<script>
+const LS = {
+  schedule: 'ps_schedule_v10',
+  bells: 'ps_bells_v10',
+  links: 'ps_links_v10'
+};
+
+// НАСТРОЙКА ПРЕДМЕТОВ
+// color - цвет свечения (blue, purple, green, red, yellow, cyan)
+// icon - эмодзи
+const DEFAULTS = {
+  schedule: {
+    "Пн": ["Разговоры о важном|08:00","Алгебра|08:50","Русский|09:45"],
+    "Вт": ["Геометрия|08:00","Английский|08:50"],
+    "Ср": ["История|08:00","Физика|08:50"],
+    "Чт": ["Алгебра|08:00","Биология|08:50"],
+    "Пт": ["Литература|08:00","География|08:50"]
+  },
+  bells: ["1 · 08:00–08:45","2 · 08:50–09:35","3 · 09:45–10:30","4 · 10:45–11:30","5 · 11:35–12:20"],
+  links: [
+    { name: "Алгебра (Макарычев)", url: "https://gdz.ru/class-9/algebra/makarichev-14/", icon: "√x", color: "blue" },
+    { name: "Геометрия (Атанасян)", url: "https://gdz.ru/class-7/geometria/atanasyan-7-9/", icon: "📐", color: "purple" },
+    { name: "Русский язык (Бархударов)", url: "https://gdz.ru/class-9/russkii_yazik/barhudarov-kruchkov-9/", icon: "📚", color: "yellow" },
+    { name: "Английский (Spotlight)", url: "https://gdz.ru/class-9/english/reshebnik-spotlight-9-vaulina-yu-e/", icon: "🌐", color: "cyan" },
+    { name: "Биология (Пасечник)", url: "https://pomogalka.me/9-klass/biologiya/pasechnik-rabochaya-tetrad/", icon: "🧬", color: "red" },
+    { name: "География (Алексеев)", url: "https://pomogalka.me/9-klass/geografiya/alekseev/", icon: "🌍", color: "green" }
+  ]
+};
+
+function load(key){ try{ return JSON.parse(localStorage.getItem(LS[key])) ?? DEFAULTS[key]; }catch{ return DEFAULTS[key]; } }
+function save(key,val){ localStorage.setItem(LS[key], JSON.stringify(val)); }
+
+let currentDay = Object.keys(load('schedule'))[0];
+let editing = null;
+
+// --- НАВИГАЦИЯ ---
+function switchTab(tabId) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(`screen-${tabId}`).classList.add('active');
+  document.getElementById(`btn-${tabId}`).classList.add('active');
+}
+
+// --- РЕНДЕР ПРЕДМЕТОВ ---
+function renderSubjects(){
+  const grid = document.getElementById('subjectsGrid');
+  grid.innerHTML = load('links').map(l => `
+    <a href="${l.url}" target="_blank" rel="noopener" class="subject-card" data-color="${l.color}">
+      <div class="subject-icon">${l.icon}</div>
+      <div class="subject-name">${l.name}</div>
+      <div class="subject-arrow">›</div>
+    </a>
+  `).join('');
+}
+
+// --- РЕНДЕР РАСПИСАНИЯ ---
+function renderDays(){
+  const sch = load('schedule');
+  document.getElementById('days').innerHTML = Object.keys(sch).map(d =>
+    `<div class="day ${d===currentDay?'active':''}" onclick="setDay('${d}')">${d}</div>`
+  ).join('');
+}
+function setDay(d){ currentDay = d; renderDays(); renderLessons(); }
+
+function renderLessons(){
+  const sch = load('schedule');
+  const list = sch[currentDay] || [];
+  document.getElementById('lessons').innerHTML = list.length
+    ? list.map((s,i)=>{
+        const [subj,time] = s.split('|');
+        return `<div class="lesson"><span class="num">${i+1}</span><span class="subj">${subj}</span><span class="time">${time||''}</span></div>`;
+      }).join('')
+    : '<p style="color:var(--muted)">Уроков нет</p>';
+}
+
+function renderBells(){
+  document.getElementById('bells').innerHTML = load('bells').map(b=>{
+    const [n,t] = b.split('·').map(x=>x.trim());
+    return `<div class="bell"><span>${n}</span><span>${t||''}</span></div>`;
+  }).join('');
+}
+
+// --- РЕДАКТИРОВАНИЕ ---
+function openEdit(what){
+  editing = what;
+  const area = document.getElementById('dlgArea');
+  const title = document.getElementById('dlgTitle');
+  const hint = document.getElementById('dlgHint');
+  const dlg = document.getElementById('dlg');
+
+  if(what==='schedule'){
+    const sch = load('schedule');
+    const lines = Object.entries(sch).map(([d,items])=> `${d}: ${items.join('; ')}`).join('\n');
+    title.textContent = 'Редактировать расписание';
+    hint.textContent = 'Формат: День: Предмет|Время; Предмет|Время';
+    area.value = lines;
+  }
+  if(what==='bells'){
+    title.textContent = 'Редактировать звонки';
+    hint.textContent = 'Одна строка = один звонок. Формат: Номер · время';
+    area.value = load('bells').join('\n');
+  }
+  dlg.showModal();
+}
+
+function saveEdit(){
+  const val = document.getElementById('dlgArea').value;
+
+  if(editing==='schedule'){
+    const sch = {};
+    val.split('\n').filter(Boolean).forEach(line=>{
+      const [day, rest] = line.split(':');
+      if(!day||!rest) return;
+      sch[day.trim()] = rest.split(';').map(s=>s.trim()).filter(Boolean);
+    });
+    save('schedule', sch);
+    if(!Object.keys(sch).includes(currentDay)) currentDay = Object.keys(sch)[0];
+    renderDays(); renderLessons();
+  }
+  if(editing==='bells'){
+    save('bells', val.split('\n').map(s=>s.trim()).filter(Boolean));
+    renderBells();
+  }
+  document.getElementById('dlg').close();
+}
+
+// Старт
+renderSubjects();
+renderDays(); renderLessons(); renderBells();
+</script>
+</body>
+</html>
